@@ -18,6 +18,13 @@ div.ex{
   width: 40%;
 }
 
+div.ex2{
+  position: relative;
+  left: 25%;
+  width: 50%;
+  background-color: #F28773;
+}
+
 form{
   display: flex;
   justify-content:center;
