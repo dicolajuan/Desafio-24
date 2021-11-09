@@ -6,11 +6,21 @@ const { insertDocuments, readDocuments } = require('./Controllers/functionsCRUD-
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+const {normalizar, desnormalizar} = require('./normalizador');
+const session = require('express-session');
 
 const objProductos = [];
 const objMensajes = [];
 
 app.use(express.static('./public'));
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+app.use(session({
+    secret: 'secreto',
+    resave: true,
+    saveUninitialized: true,
+    cookie: { maxAge: 10000 }
+}));
 
 app.engine(
     "hbs",
@@ -48,22 +58,50 @@ io.on ('connection', async (socket) => {
     socket.on('newProduct', async (data) => {
         insertDocuments(data,'producto');
         objProductos.push(data);
+        normalizar(data);
         io.sockets.emit('productCatalog', { products: objProductos});
+    });
+
+    socket.on('login', async (data) => {
+        console.log('object');
+        window.location.href = "/listPoducts";
     });
 
     socket.emit('mensajes', objMensajes);
     socket.on('nuevo-mensaje', async (data)=>{
         insertDocuments(data,'mensaje');
         objMensajes.push(data);
+        normalizar(data);
         io.sockets.emit('mensajes', objMensajes);
     });
 
 });
 
-app.get('/', async (req,res)=>{
-    res.render('products', { products: objProductos })
+app.get('/', (req,res)=>{
+    res.render('login');
 });
 
-app.get('/productos', async (req,res)=>{
-    res.json({ products: objProductos });
+app.post('/login', (req,res) => {
+    console.log('/login',req.body);
+    req.session.user=req.body.userName;
+    console.log('SESSION: ', req.session);
+    if(req.session.user || req.session.user != ''){
+        res.redirect('/listProducts');
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/logout', (req,res) => {
+    res.clearCookie('user');
+    req.session.destroy()
+    res.redirect('/');
+});
+
+app.get('/listProducts', (req,res)=>{
+    if(req.session.user){
+        res.render('products', { products: objProductos, userName: req.session.user});
+    } else {
+        res.redirect('/');
+    }
 });

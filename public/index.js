@@ -41,13 +41,22 @@ function createProd(form) {
     return false;
 }
 
+function login(form) {
+    console.log("Nuevo login!");
+    let name = document.getElementById('name').value;
+    console.log(name);
+    socket.emit('Ingresar', name);
+    return false;
+}
 
 socket.on('mensajes', (data) => render(data));
 
 let render = (data) => {
+    console.log(data);
     let html = data.map((e,i)=>`
         <div>
-            <strong class="bluetext">${e.autor}</strong>
+            <img src="${e.author.avatar}" width="50" height="33"></td>
+            <strong class="bluetext">${e.author.email}</strong>
             <span class="browntext">[${e.fecha}]: </span>
             <em class="greentext">${e.texto}</em>
         </div>
@@ -59,13 +68,25 @@ function enviarMensaje(e){
     let fecha = new Date();
     fecha = fecha.toLocaleString('es-AR');
     let envio = {
-        autor: document.getElementById('usuario').value,
+        author: {
+            email: document.getElementById('usuario').value,
+            nombre: document.getElementById('nombre').value,
+            apellido: document.getElementById('apellido').value,
+            edad: document.getElementById('edad').value,
+            alias: document.getElementById('alias').value,
+            avatar: document.getElementById('avatar').value
+        },
         texto: document.getElementById('texto').value,
         fecha: fecha,
     }
     console.log(envio);
     document.getElementById('usuario').disabled = true;
-    texto: document.getElementById('texto').value = '';
+    document.getElementById('texto').value = '';
+    document.getElementById('divnombre').remove();
+    document.getElementById('divapellido').remove();
+    document.getElementById('divedad').remove();
+    document.getElementById('divalias').remove();
+    document.getElementById('divavatar').remove();
     socket.emit('nuevo-mensaje', envio);
     return false;
 }
