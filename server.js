@@ -19,6 +19,7 @@ app.use(session({
     secret: 'secreto',
     resave: true,
     saveUninitialized: true,
+    rolling: true,
     cookie: { maxAge: 10000 }
 }));
 
@@ -99,6 +100,8 @@ app.get('/logout', (req,res) => {
 });
 
 app.get('/listProducts', (req,res)=>{
+    //req.session.cookie.maxAge = 20000;
+    console.log(req.session);
     if(req.session.user){
         res.render('products', { products: objProductos, userName: req.session.user});
     } else {
